@@ -76,12 +76,22 @@ if __name__== "__main__":
     args = conf()
     print(args)
 
-    # GPUs
+    # Device selection (CUDA, MPS, or CPU)
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
-    
+    use_mps = not args.no_cuda and not use_cuda and torch.backends.mps.is_available()
+
+    if use_cuda:
+        device = torch.device("cuda")
+    elif use_mps:
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    print(f"Using device: {device}")
+
     #to deterministic
-    cudnn.deterministic = True
+    if use_cuda:
+        cudnn.deterministic = True
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     
