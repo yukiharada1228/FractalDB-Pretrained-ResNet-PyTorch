@@ -1,0 +1,4 @@
+[submodule "ImageRecognitionDataset"]
+	path = ImageRecognitionDataset
+	url = https://github.com/yukiharada1228/ImageRecognitionDataset.git
+	branch = feature/fractaldb-pretrained-resnet-pytorch

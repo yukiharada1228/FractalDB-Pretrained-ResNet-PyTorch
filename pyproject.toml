@@ -1,0 +1,35 @@
+[project]
+name = "fractaldb-pretrained-resnet-pytorch"
+version = "0.1.0"
+description = "Pre-training without Natural Images using FractalDB"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+authors = [
+    { name = "Hirokatsu Kataoka" },
+    { name = "Kazushige Okayasu" },
+]
+dependencies = [
+    "torch>=1.4.0",
+    "torchvision>=0.5.0",
+    "numpy>=1.18.0",
+    "pillow>=7.0.0",
+    "opencv-python>=4.1.0",
+    "tensorboard>=2.11.2",
+    "pandas>=1.1.5",
+    "h5py>=3.8.0",
+]
+
+[project.urls]
+Homepage = "https://hirokatsukataoka16.github.io/Pretraining-without-Natural-Images/"
+Repository = "https://github.com/hirokatsukataoka16/FractalDB-Pretrained-ResNet-PyTorch"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pretraining", "finetuning", "fractal_renderer", "param_search"]
+
+[dependency-groups]
+dev = []

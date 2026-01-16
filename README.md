@@ -51,9 +51,26 @@ If you use this code, please cite the following paper:
 * CUDA (worked at 10.1)
 * CuDNN (worked at 7.6)
 * Graphic board (worked at single/four NVIDIA V100)
+* `uv` for dependency management
 
 * Fine-tuning datasets
-If you would like to fine-tune on an image dataset, you must prepare conventional or self-defined datasets. [[This repository](https://github.com/chatflip/ImageRecognitionDataset)] includes a downloader as an optional way. To use the following execution files ```exe.sh``` and ```exe_parallel.sh```, you should set the downloaded CIFAR-10 dataset in ```./data``` as the following structure.
+If you would like to fine-tune on an image dataset, you must prepare conventional or self-defined datasets. This repository uses [[ImageRecognitionDataset](https://github.com/yukiharada1228/ImageRecognitionDataset)] as a submodule.
+
+To set up the dataset using the submodule:
+
+1. Initialize and update the submodule:
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+2. Download the dataset (e.g., CIFAR10) using the tool:
+   ```bash
+   cd ImageRecognitionDataset
+   uv run src/download.py --dataset CIFAR10 --data_file_path ../data
+   cd ../
+   ```
+
+After downloading, you should have the following directory structure:
 
 ```misc
 ./
@@ -65,14 +82,13 @@ If you would like to fine-tune on an image dataset, you must prepare conventiona
           0002.png
           ...
         ...
-      val/
+      test/
         airplane/
           0001.png
           0002.png
           ...
         ...
-
-# Caution! We changed the dir name from 'test' to 'val'
+      val -> test (symbolic link)
 ```
 
 ## Execution file
@@ -97,7 +113,7 @@ chmod +x exe_parallel.sh
 Run the code ```param_search/ifs_search.py``` to create fractal categories and their representative images. In our work, the basic parameters are ```--rate 0.2 --category 1000 --numof_point 100000```
 
 ```bash
-python param_search/ifs_search.py --rate=0.2 --category=1000 --numof_point=100000  --save_dir='./data'
+uv run python param_search/ifs_search.py --rate=0.2 --category=1000 --numof_point=100000  --save_dir='./data'
 ```
 
 The structure of directories is constructed as follows.
@@ -122,7 +138,7 @@ The structure of directories is constructed as follows.
 Run the code ```fractal_renderer/make_fractaldb.py``` to construct FractalDB.
 
 ```bash
-python fractal_renderer/make_fractaldb.py
+uv run python fractal_renderer/make_fractaldb.py
 ```
 
 The code includes the following parameters.
@@ -166,8 +182,8 @@ The structure of rendered FractalDB is constructed as follows.
 
 Run the code ```pretraining/main.py``` to create a FractalDB pre-trained model.
 
-```misc
-python pretraining/main.py
+```bash
+uv run python pretraining/main.py
 ```
 
 Please confirm a FractalDB is existing in ```./data``` directory. After the pre-training, a trained model is created like ```FractalDB-1000_resnet50_epoch90.pth``` and ```FractalDB-1000_resnet50_checkpoint.pth.tar```. Moreover, you can resume the training from a checkpoint by assigning ```--resume``` parameter. 
@@ -193,20 +209,20 @@ FractalDB-10000_resnet50_epoch90.pth: --dataset=FractalDB-10000 --usenet=resnet5
 ```
 
 If you would like to additionally train from the pre-trained model, you command with the next fine-tuning code as follows.
-```misc
+```bash
 # FractalDB-1000_resnet50_epoch90.pth
-python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --dataset='FractalDB-1000' --ft_dataset='YourDataset' --numof_pretrained_classes=1000 --usenet=resnet50
+uv run python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --dataset='FractalDB-1000' --ft_dataset='YourDataset' --numof_pretrained_classes=1000 --usenet=resnet50
 
 # FractalDB-10000_resnet50_epoch90.pth
-python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --dataset='FractalDB-10000' --ft_dataset='YourDataset' --numof_pretrained_classes=10000 --usenet=resnet50
+uv run python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --dataset='FractalDB-10000' --ft_dataset='YourDataset' --numof_pretrained_classes=10000 --usenet=resnet50
 ```
 
 ## Fine-tuning
 
 Run the code ```finetuning/main.py``` to additionally train any image datasets. However, in order to use the fine-tuning code, you must prepare a fine-tuning dataset (e.g., CIFAR-10/100, Pascal VOC 2012). Please look at ```Requirements``` for a dataset preparation and download option.
 
-```misc
-python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --ft_dataset='YourDataset'
+```bash
+uv run python finetuning/main.py --path2db='/path/to/your/fine-tuning/data' --ft_dataset='YourDataset'
 ```
 
 These are the important parameters in fine-tuning.
