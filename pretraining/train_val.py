@@ -53,6 +53,8 @@ def train(args, model, device, train_loader, optimizer, criterion, epoch):
                    data_time=data_time, loss=losses, top1=top1))
         iteration += 1
 
+    return losses.avg, top1.avg
+
 # Validation
 def validate(args, model, device, val_loader, criterion, iteration):
 
@@ -79,7 +81,7 @@ def validate(args, model, device, val_loader, criterion, iteration):
               'Acc@1 ({top1.avg:.3f})\t'
               'Acc@5 ({top5.avg:.3f})'.format(
                loss=losses, top1=top1, top5=top5))
-    return losses.avg
+    return losses.avg, top1.avg, top5.avg
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

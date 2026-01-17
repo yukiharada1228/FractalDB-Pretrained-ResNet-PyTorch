@@ -16,6 +16,7 @@ import torch.backends.cudnn as cudnn
 import torchvision.models as models
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch.utils.tensorboard import SummaryWriter
 
 from args import conf
 from alex import bn_alexnet
@@ -129,15 +130,31 @@ if __name__== "__main__":
         print("=> loaded checkpoint '{}' (epoch {})".format(args.resume, checkpoint['epoch']))
     if not args.no_multigpu:
         model = nn.DataParallel(model)
+
+    # TensorBoard writer
+    log_dir = os.path.join('runs', f'{args.dataset}_{args.usenet}_{datetime.datetime.now().strftime("%Y%m%d-%H%M%S")}')
+    writer = SummaryWriter(log_dir)
+    print(f"TensorBoard logging to: {log_dir}")
     
     # FractalDB Pre-training
     iteration = (args.start_epoch-1)*len(train_loader)
     for epoch in range(args.start_epoch, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, criterion, epoch)
+        train_loss, train_acc = train(args, model, device, train_loader, optimizer, criterion, epoch)
+
+        # Log training metrics to TensorBoard
+        writer.add_scalar('Loss/train', train_loss, epoch)
+        writer.add_scalar('Accuracy/train', train_acc, epoch)
+        writer.add_scalar('Learning_rate', optimizer.param_groups[0]['lr'], epoch)
+
         scheduler.step()
         iteration += len(train_loader)
         if args.val:
-            validation_loss = validate(args, model, device, val_loader, criterion, iteration)
+            val_loss, val_acc1, val_acc5 = validate(args, model, device, val_loader, criterion, iteration)
+
+            # Log validation metrics to TensorBoard
+            writer.add_scalar('Loss/val', val_loss, epoch)
+            writer.add_scalar('Accuracy/val_top1', val_acc1, epoch)
+            writer.add_scalar('Accuracy/val_top5', val_acc5, epoch)
         if epoch % args.save_interval == 0:
             if args.no_multigpu:
                 model_state = model.cpu().state_dict()
@@ -152,6 +169,9 @@ if __name__== "__main__":
                         'scheduler' : scheduler.state_dict(),}, checkpoint)
             model = model.to(device)
     torch.save(model_state, saved_weight.replace('.tar',''))
+
+    # Close TensorBoard writer
+    writer.close()
 
     # Processing time
     endtime = time.time()
