@@ -15,6 +15,9 @@ def train(args, model, device, train_loader, optimizer, epoch, iteration):
 	model.train()
 	criterion = nn.CrossEntropyLoss(size_average=True) # previous PyTorch ver.
 	#criterion = nn.CrossEntropyLoss(reduction='sum')
+	total_loss = 0
+	total_correct = 0
+	total_samples = 0
 	for i_batch, sample_batched in enumerate(train_loader):
 		data, target = sample_batched["image"].to(device), sample_batched["label"].to(device)
 		optimizer.zero_grad()
@@ -24,11 +27,22 @@ def train(args, model, device, train_loader, optimizer, epoch, iteration):
 		loss = criterion(output, target)
 		loss.backward()
 		optimizer.step()
+
+		# Accumulate metrics
+		total_loss += loss.item()
+		total_correct += correct
+		total_samples += len(sample_batched["label"])
+
 		if i_batch % args.log_interval == 0:
 			sys.stdout.write("\repoch:{0:>3} iteration:{1:>6} train_loss: {2:.6f} train_accracy: {3:5.2f}%".format(
 							epoch, iteration, loss.item(), 100.*correct/float(len(sample_batched["label"]))))
 			sys.stdout.flush()
 		iteration += 1
+
+	# Return average loss and accuracy
+	avg_loss = total_loss / len(train_loader)
+	avg_accuracy = 100. * total_correct / total_samples
+	return avg_loss, avg_accuracy
 
 # Validation
 def val(args, model, device, test_loader, iteration):

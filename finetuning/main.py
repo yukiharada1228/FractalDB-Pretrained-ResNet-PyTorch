@@ -13,6 +13,7 @@ import torchvision
 import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
+from torch.utils.tensorboard import SummaryWriter
 
 from torchvision import transforms
 
@@ -98,14 +99,29 @@ if __name__== "__main__":
 	if args.multigpu:
 		model = nn.DataParallel(model)
 	iteration = (args.start_epoch-1)*len(train_loader)
-	
+
+	# TensorBoard writer
+	log_dir = os.path.join('runs', f'pt_{args.dataset}_ft_{args.ft_dataset}_{args.usenet}_{datetime.datetime.now().strftime("%Y%m%d-%H%M%S")}')
+	writer = SummaryWriter(log_dir)
+	print(f"TensorBoard logging to: {log_dir}")
+
 	# Training & Validation
 	for epoch in range(1, args.epochs + 1):
 		print("\nepoch {}".format(epoch))
-		train(args, model, device, train_loader, optimizer, epoch, iteration)
+		train_loss, train_acc = train(args, model, device, train_loader, optimizer, epoch, iteration)
+
+		# Log training metrics to TensorBoard
+		writer.add_scalar('Loss/train', train_loss, epoch)
+		writer.add_scalar('Accuracy/train', train_acc, epoch)
+		writer.add_scalar('Learning_rate', optimizer.param_groups[0]['lr'], epoch)
+
 		scheduler.step()
 		iteration += len(train_loader)
 		validation_loss, validation_accuracy = val(args, model, device, test_loader, iteration)
+
+		# Log validation metrics to TensorBoard
+		writer.add_scalar('Loss/val', validation_loss, epoch)
+		writer.add_scalar('Accuracy/val', validation_accuracy, epoch)
 		if epoch % args.save_interval == 0:
 			saved_weight = os.path.join(args.path2weight, "pt_"+args.dataset+"_ft_"+args.ft_dataset+"_"+args.usenet+"_epoch"+ str(epoch) +".pth")
 			if args.multigpu:
@@ -123,7 +139,10 @@ if __name__== "__main__":
 						'scheduler' : scheduler.state_dict(),}, checkpoint)
 
 			model = model.to(device)
-	
+
+	# Close TensorBoard writer
+	writer.close()
+
 	# Processing time
 	endtime = time.time()
 	interval = endtime - starttime
