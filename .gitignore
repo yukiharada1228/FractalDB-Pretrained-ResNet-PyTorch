@@ -3,3 +3,4 @@
 val
 
 .venv/
+*.pyc
