@@ -40,9 +40,6 @@ def model_select(args):
         model = vgg19_bn(pretrained=False,num_classes=args.numof_classes).to(device)
         return model
     elif args.usenet == "resnet18":
-        model = resnet18(pretrained=False, num_classes=args.numof_classes).to(device)
-        return model
-    elif args.usenet == "resnet18_torchvision":
         model = models.resnet18(pretrained=False, num_classes=args.numof_classes).to(device)
         return model
     elif args.usenet == "resnet34":

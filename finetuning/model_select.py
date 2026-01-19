@@ -49,22 +49,6 @@ def model_select(args):
 	# ResNet-18
 	if args.usenet == "resnet18":
 		last_layer = nn.Linear(512, args.numof_classes)
-		model = resnet18(pretrained=False, num_classes=args.numof_pretrained_classes)
-		weight_name = os.path.join(args.path2weight, args.dataset + "_" + args.usenet + "_epoch" + str(args.useepoch) + ".pth")
-		
-		# FractalDB pre-trained model
-		if os.path.exists(weight_name):
-			print ("use pretrained model : %s" % weight_name)
-			param = torch.load(weight_name, map_location=lambda storage, loc: storage)
-			model.load_state_dict(param)
-		# ImageNet pre-trained model
-		elif args.dataset == "imagenet":
-			print ("use imagenet pretrained model")
-			model = resnet18(pretrained=True)
-		model.fc = last_layer
-	
-	if args.usenet == "resnet18_torchvision":
-		last_layer = nn.Linear(512, args.numof_classes)
 		model = models.resnet18(pretrained=False, num_classes=args.numof_pretrained_classes)
 		weight_name = os.path.join(args.path2weight, args.dataset + "_" + args.usenet + "_epoch" + str(args.useepoch) + ".pth")
 		
