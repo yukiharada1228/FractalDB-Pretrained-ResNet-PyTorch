@@ -6,7 +6,7 @@ imagesize=362
 numof_point=100000
 numof_ite=200000
 howto_draw='patch_gray'
-arch=resnet18_torchvision
+arch=resnet18
 
 # Parameter search
 uv run python param_search/ifs_search.py --rate=${fillrate} --category=${numof_category} --numof_point=${numof_point} --save_dir='./data'
