@@ -2,8 +2,5 @@
 *.csv
 val
 
-*.pth
-*.tar
-
 .venv/
 *.pyc
